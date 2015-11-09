@@ -13,6 +13,7 @@ namespace Circles
         public double Width { get; }
         public double Height { get; }
         private double Gravity;
+        private Vector[] PrecalculatedDeltaFCache = null;
 
         public World(double width, double height, double Gravity) {
             this.Objects = new List<MovingCircle>();
@@ -29,53 +30,48 @@ namespace Circles
 
         public void Tick(double timestep) {
             timestep /= 1000; // Just seconds, please
-            foreach (MovingCircle obj in Objects)
-            {
-                obj.PrecalculatedDeltaF = new Vector(0, 0);
+
+            int len = Objects.Count;
+            Vector[] accelerationCache = new Vector[len];
+            // We know that the vector value is 0, 0
+            this.PrecalculatedDeltaFCache = new Vector[len];
+
+            for (int i = 0; i < len; ++i) {
+                MovingCircle obj = Objects[i];
+                Vector acceleration = force(obj, i, len) / obj.Mass;
+
+                obj.Position += timestep * (obj.Speed + timestep * acceleration * .5);
+
+                accelerationCache[i] = acceleration;
+
+                CalculateSpeedAndPositionFromCollisions(obj, i, len);
             }
 
-            foreach (MovingCircle obj in Objects) {
-                Vector acceleration = force(obj) / obj.Mass;
-
-                obj.Position += timestep * (obj.Speed + timestep * acceleration / 2);
-
-                obj.PrecalculatedDeltaF = acceleration;
-
-                CalculateSpeedAndPositionFromCollisions(obj);
-            }
-
+            this.PrecalculatedDeltaFCache = new Vector[len];
             // We want updated position and speeds
-            foreach (MovingCircle obj in Objects) {
-                Vector newAcceleration = force(obj) / obj.Mass;
+            for (int i = 0; i < len; ++i) {
+                MovingCircle obj = Objects[i];
+                Vector newAcceleration = force(obj, i, len) / obj.Mass;
                 // (oldAcceleration + newAcceleration) / 2
-                obj.Speed += timestep * (obj.PrecalculatedDeltaF + newAcceleration) / 2;
+                obj.Speed += timestep * (accelerationCache[i] + newAcceleration) * .5;
             }
         }
 
-        public void CalculateSpeedAndPositionFromCollisions(MovingCircle obj) {
+        public void CalculateSpeedAndPositionFromCollisions(MovingCircle obj, int myIndex, int len) {
             int len = Objects.Count;
-            bool detectingCollisions = false;
+
             // We only detect collisions for bodies after us in the list
-            for (int i = 0; i < len; ++i)
+            for (int i = myIndex + 1; i < len; ++i)
             {
-                MovingCircle other = Objects.ElementAt(i);
-
-                if (ReferenceEquals(obj, other))
-                {
-                    detectingCollisions = true;
-                    continue;
-                }
-
-                if (!detectingCollisions)
-                    continue;
+                MovingCircle other = Objects[i];
 
                 Vector centerToCenter = (other.Center - obj.Center);
                 double centerToCenterLen = centerToCenter.Length;
 
                 // If they collide
-                if ( centerToCenterLen < other.Radius + obj.Radius )
+                if ( centerToCenterLen <= other.Radius + obj.Radius )
                 {
-                    // We get the translation necessary to move one 
+                    // We get the translation necessary to move one
                     Vector a = centerToCenter * (obj.Radius / centerToCenterLen);
                     Vector b = centerToCenter * (centerToCenterLen - other.Radius) / centerToCenterLen;
                     Vector middle = (a - b) / 2;
@@ -106,56 +102,41 @@ namespace Circles
             }
 
             if (obj.Position.Y < 0) {
-                Debug.Print("Collided with roof");
-                // Do nothing
                 obj.Speed = new Vector(obj.Speed.X, Math.Abs(obj.Speed.Y) * obj.BounceFactor);
                 obj.Position = new Point(obj.Position.X, 0);
             } else if (obj.Position.Y + obj.Diameter > this.Height) {
-                Debug.Print("Collided with floor");
                 obj.Speed = new Vector(obj.Speed.X, -Math.Abs(obj.Speed.Y) * obj.BounceFactor);
                 obj.Position = new Point(obj.Position.X, this.Height - obj.Diameter);
             }
 
             if (obj.Position.X < 0) {
-                Debug.Print("Collided with left wall");
                 obj.Position = new Point(0, obj.Position.Y);
-                obj.Speed = new Vector(Math.Abs(obj.Speed.X) * obj.BounceFactor, obj.Speed.Y);
+                obj.Speed = new Vector(-obj.Speed.X * obj.BounceFactor, obj.Speed.Y);
             } else if (obj.Position.X + obj.Diameter > this.Width) {
                 obj.Position = new Point(this.Height - obj.Diameter, obj.Position.Y);
-                obj.Speed = new Vector(-Math.Abs(obj.Speed.X) * obj.BounceFactor, obj.Speed.Y);
+                obj.Speed = new Vector(-obj.Speed.X * obj.BounceFactor, obj.Speed.Y);
             }
 
         }
 
-        public Vector force(MovingCircle obj) {
-            Vector f = obj.PrecalculatedDeltaF;
+        public Vector force(MovingCircle obj, int myIndex, int len) {
+            Vector f = PrecalculatedDeltaFCache[myIndex];
 
             // Vector f = new Vector(0.0, 9.8) * obj.Mass
             // Actually the gravity is in px/s/s... Lol
             f += new Vector(0.0, this.Gravity) * obj.Mass; // Gravity
 
-
-            int len = Objects.Count;
-            bool detectingCollisions = false;
             // We only detect collisions for bodies after us in the list
-            for (int i = 0; i < len; ++i)
+            for (int i = myIndex + 1; i < len; ++i)
             {
-                MovingCircle other = Objects.ElementAt(i);
-
-                if (ReferenceEquals(obj, other))
-                {
-                    detectingCollisions = true;
-                    continue;
-                }
-
-                if (!detectingCollisions)
-                    continue;
+                MovingCircle other = Objects[i];
 
                 Vector centerToCenter = (other.Center - obj.Center);
-                double centerToCenterLen = centerToCenter.Length;
 
                 // If they collide
-                if ( centerToCenterLen < other.Radius + obj.Radius )
+                // NOTE: Instead of length < o1.radius + o2.radius we use LengthSquared, since it's faster
+                // (Obtaining the length needs a square root)
+                if ( centerToCenter.LengthSquared < other.Radius * other.Radius + obj.Radius * obj.Radius )
                 {
                     // Now we've positioned the cicles, we can normalize the centerToCenter vector in order to convert it into a unit vector
                     centerToCenter.Normalize();
@@ -164,8 +145,8 @@ namespace Circles
                     f += other.Speed * other.Mass;
                     f -= obj.Speed * obj.Mass;
 
-                    other.PrecalculatedDeltaF += obj.Speed * obj.Mass;
-                    other.PrecalculatedDeltaF -= other.Speed * other.Mass;
+                    PrecalculatedDeltaFCache[i] += obj.Speed * obj.Mass;
+                    PrecalculatedDeltaFCache[i] -= other.Speed * other.Mass;
                 }
             }
 
@@ -173,20 +154,16 @@ namespace Circles
             //     f += normal; (f = 0);
             // TODO: Consider using < instead of <=
             if (obj.Position.Y < 0) {
-                Debug.Print("Collided with roof");
                 if (Gravity < 0)
                     f += new Vector(0, obj.Mass * -this.Gravity);
-                f += new Vector(-obj.Speed.Y * obj.Mass, 0);
-                // Do nothing
+                f += new Vector(0, -obj.Speed.Y * obj.Mass);
             } else if (obj.Position.Y + obj.Diameter > this.Height) {
-                Debug.Print("Collided with floor");
                 if (Gravity > 0)
                     f += new Vector(0, obj.Mass * -this.Gravity);
-                f += new Vector(0, obj.Mass * -obj.Speed.Y);
+                f += new Vector(0, -obj.Speed.Y * obj.Mass);
             }
 
             if (obj.Position.X < 0) {
-                Debug.Print("Collided with left wall");
                 // Lineal moment:
                 // p = m * v
                 // F = dp/dt

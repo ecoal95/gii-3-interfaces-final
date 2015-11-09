@@ -1,19 +1,43 @@
-﻿using System.Windows.Controls;
+﻿using System;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace Circles
 {
     class NumericTextBox: TextBox
     {
+        public double Value
+        {
+            get
+            {
+                try
+                {
+                    return double.Parse(Text);
+                } catch (FormatException e)
+                {
+                    return 0;
+                }
+            }
+            set
+            {
+                Text = value.ToString();
+            }
+        }
+
         public NumericTextBox(): base()
         {
             PreviewTextInput += RejectNonNumericInput;
         }
 
-        private void RejectNonNumericInput(object sender, TextCompositionEventArgs obj)
+        private void RejectNonNumericInput(object _sender, TextCompositionEventArgs obj)
         {
             double d;
-            if ( ! double.TryParse(((NumericTextBox)sender).Text + obj.Text, out d) )
+
+            NumericTextBox sender = (NumericTextBox)_sender;
+            string finalText = sender.Text.Remove(sender.SelectionStart, sender.SelectionLength)
+                                           .Insert(sender.SelectionStart, obj.Text);
+
+            if ( ! double.TryParse(finalText, out d) )
                 obj.Handled = true;
         }
     }

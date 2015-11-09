@@ -5,7 +5,7 @@ using System.Windows.Shapes;
 
 namespace Circles
 {
-    class MovingCircle
+    public class MovingCircle
     {
         // TODO: This shouldn't be public, that potentially breaks the "circleness"
         // I should write setters for things like brush or similar
@@ -18,10 +18,6 @@ namespace Circles
 
         public double BounceFactor { get; set; }
         public double Mass { get; set; }
-
-        // This is used to store the lineal momentum force when we calculate collisions
-        // Since we just operate on each collision once (not once per ball involved). 
-        public Vector PrecalculatedDeltaF { get; set; }
 
         public double Diameter {
             get

@@ -1,9 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Threading;
-using System.Diagnostics;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 
 namespace Circles
 {
@@ -12,69 +19,32 @@ namespace Circles
     /// </summary>
     public partial class MainWindow : Window
     {
-        private ViewModel ViewModel;
-        private World World;
-        private DispatcherTimer Timer;
-        private ConfigurationWindow ConfigurationWindow;
-
-        const double WORLD_WIDTH = 500.0;
-        const double WORLD_HEIGHT = 500.0;
-        const uint PHYSICS_PER_SECOND = 120;
-        const uint FRAMES_PER_SECOND = 120;
-        const uint PHYSICS_PER_FRAME = PHYSICS_PER_SECOND / FRAMES_PER_SECOND;
-        private static uint iters = 0;
+        private WorldConfigViewModel config;
 
         public MainWindow()
         {
             InitializeComponent();
-            this.ViewModel = new ViewModel();
-            this.World = new World(WORLD_WIDTH, WORLD_HEIGHT, ViewModel.Gravity);
-            this.Timer = new DispatcherTimer();
-            this.Timer.Interval = new TimeSpan((long)(1E9 / PHYSICS_PER_SECOND / 100));
-            this.Timer.Tick += OnTick;
-            this.Timer.Start();
-
-            Canvas.Width = WORLD_WIDTH;
-            Canvas.Height = WORLD_HEIGHT;
+            this.config = new WorldConfigViewModel();
+            this.DataContext = this.config;
+            ObjectsBinding.ItemsSource = config.Objects;
+            Mass.Value = 15;
+            Radius.Value = 15;
+            BounceFactor.Value = 1;
+            SpeedX.Value = SpeedY.Value = 0;
+            PositionX.Value = PositionY.Value = 500 / 2;
         }
 
-        public void AddCircle(Point position) {
-            World.Objects.Add(new MovingCircle(ViewModel.Radius, ViewModel.Mass, ViewModel.BounceFactor, position - new Vector(ViewModel.Radius, ViewModel.Radius), new Vector(0, 0)));
-        }
-
-        private void Draw() {
-            Canvas.Children.Clear();
-            foreach (MovingCircle obj in World.Objects)
-            {
-                Canvas.Children.Add(obj.circle);
-                Canvas.SetLeft(obj.circle, obj.Position.X);
-                Canvas.SetTop(obj.circle, obj.Position.Y);
-            }
-        }
-
-        private void HandleMouseDown(object sender, MouseButtonEventArgs e)
+        private void AddObject(object sender, RoutedEventArgs e)
         {
-            Debug.Print("MouseDown");
-            AddCircle(e.GetPosition(Canvas));
+            config.Objects.Add(new MovingCircleConfig(new Point(PositionX.Value, PositionY.Value), Radius.Value, Mass.Value, BounceFactor.Value, new Vector(SpeedX.Value, SpeedY.Value)));
         }
 
-        private void OnTick(object sender, EventArgs e) {
-            World.Tick(this.Timer.Interval.TotalMilliseconds, ViewModel.Gravity);
-            if ( iters % PHYSICS_PER_FRAME == 0 )
-                Draw();
-
-            iters++;
+        private void StartSimulation(object sender, EventArgs e)
+        {
+            new SimulationWindow(config).Show();
+            this.Close();
         }
 
-        private void OpenConfigurationDialog(object sender, EventArgs e) {
-            if (ConfigurationWindow == null || !ConfigurationWindow.IsVisible)
-            {
-                ConfigurationWindow = new ConfigurationWindow();
-                ConfigurationWindow.DataContext = ViewModel;
-                ConfigurationWindow.Show();
-            }
-
-            ConfigurationWindow.Focus();
-        }
+        // TODO: Add map managing capabilities
     }
 }

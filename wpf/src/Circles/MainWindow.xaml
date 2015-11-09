@@ -5,11 +5,95 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Circles"
         mc:Ignorable="d"
-        Title="MainWindow" SizeToContent="WidthAndHeight">
-    <StackPanel>
-        <Button Name="OpenConfigurationDialogButton" Click="OpenConfigurationDialog">Configurar</Button>
-        <!-- Background is needed to handle events -->
-        <Canvas Name="Canvas" Height="500" Width="500" MouseDown="HandleMouseDown" Background="Transparent">
-        </Canvas>
-    </StackPanel>
+        Title="MainWindow" SizeToContent="WidthAndHeight" MinWidth="500">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Grid.Column="0" Margin="10 0 10 0">
+            <Label>Gravity (px/s/s):</Label>
+            <local:NumericTextBox Text="{Binding GravityText, Mode=TwoWay}" x:Name="Gravity"></local:NumericTextBox>
+
+            <Label>World Width (px):</Label>
+            <local:NumericTextBox Text="{Binding WidthText, Mode=TwoWay}" x:Name="Width"></local:NumericTextBox>
+
+            <Label>World Height (px):</Label>
+            <local:NumericTextBox Text="{Binding HeightText, Mode=TwoWay}" x:Name="Height"></local:NumericTextBox>
+
+            <CheckBox IsChecked="{Binding IsStatic}" Margin="0 10 0 0">Static</CheckBox>
+
+            <Separator Margin="0 10 0 0"></Separator>
+
+            <Label>Objects</Label>
+            <ListView Name="ObjectsBinding">
+                <ListView.Style>
+                    <Style TargetType="ListView">
+                        <Style.Triggers>
+                            <Trigger Property="HasItems"
+                                     Value="False">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListView">
+                                            <Border Background="White" BorderBrush="Gray" Padding="5 3" BorderThickness="1">
+                                                <TextBlock Text="None yet, add one to get started!"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListView.Style>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock>
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="Ball p: ({0}), s: ({1}), r: {2}, m: {3}">
+                                    <Binding Path="Position"></Binding>
+                                    <Binding Path="Speed"></Binding>
+                                    <Binding Path="Radius"></Binding>
+                                    <Binding Path="Mass"></Binding>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <Button Margin="0 10 0 0" Click="AddObject">Add</Button>
+        </StackPanel>
+        <StackPanel Margin="10 0 5 0" Grid.Row="1" Grid.Column="0">
+            <Label>Initial Position (X):</Label>
+            <local:NumericTextBox x:Name="PositionX"></local:NumericTextBox>
+
+            <Label>Initial Position (Y):</Label>
+            <local:NumericTextBox x:Name="PositionY"></local:NumericTextBox>
+        </StackPanel>
+        <StackPanel Margin="5 0 10 0" Grid.Row="1" Grid.Column="1">
+            <Label>Initial Speed (X):</Label>
+            <local:NumericTextBox x:Name="SpeedX"></local:NumericTextBox>
+
+            <Label>Initial Speed (Y):</Label>
+            <local:NumericTextBox x:Name="SpeedY"></local:NumericTextBox>
+        </StackPanel>
+        <StackPanel Margin="10" Grid.Row="2" Grid.ColumnSpan="2">
+            <TextBlock Text="{Binding ElementName=Mass,Path=Value, StringFormat=Mass: {0}}"></TextBlock>
+            <Slider IsSnapToTickEnabled="true" TickFrequency=".01" Name="Mass" Minimum="0" Maximum="100" SmallChange=".01" LargeChange=".01"></Slider>
+
+            <TextBlock Text="{Binding ElementName=Radius,Path=Value,StringFormat=Radius: {0}}"></TextBlock>
+            <Slider IsSnapToTickEnabled="true" TickFrequency=".01" Name="Radius" Minimum="10" Maximum="100" SmallChange=".01" LargeChange=".01"></Slider>
+
+            <TextBlock Text="{Binding ElementName=BounceFactor,Path=Value,StringFormat=Bounce \Factor: {0}}"></TextBlock>
+            <Slider IsSnapToTickEnabled="true" TickFrequency=".01" Name="BounceFactor" Minimum="0" Maximum="2" SmallChange=".01" LargeChange=".01"></Slider>
+        </StackPanel>
+        <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Margin="10">
+            <Button Margin="0" Click="StartSimulation">Start Simulation</Button>
+        </StackPanel>
+    </Grid>
 </Window>
