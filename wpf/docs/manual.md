@@ -41,6 +41,7 @@ la aceleración, que multiplicada por el tiempo pasado da el incremento de
 velocidad.
 
 #### Integración de Verlet
+
 Se utiliza el [método de
 Verlet](https://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet) para
 calcular la aceleración, ya que el método de Euler (el más obvio) introduce un
@@ -78,7 +79,7 @@ de simulación estaban todavía chocando, se quedaban indefinidamente pegados (c
 frame se detectaba el choque en un sentido). Esto se ha solucionado moviendo los
 círculos al punto medio entre los radios de los círculosr:
 
-```csharp
+```cs
 Vector a = centerToCenter * (obj.Radius / centerToCenterLen);
 Vector b = centerToCenter * (centerToCenterLen - other.Radius) / centerToCenterLen;
 Vector middle = (a - b) / 2;
@@ -103,7 +104,7 @@ Este flag se usa para sólo detectar colisiones con objetos que van después que
 nosotros en la lista. No sólo es más eficiente así, sino que **previene detectar
 la misma colisión múltiples veces**.
 
-```csharp
+```cs
 if (ReferenceEquals(obj, other))
 {
     detectingCollisions = true;
@@ -115,19 +116,16 @@ if (!detectingCollisions)
 ```
 
 Obviamente, cuando se detecta una colisión, se suman determinadas fuerzas
-a ambos objetos. Como la colisión no se detecta varias veces, tenemos un campo
-`PrecalculatedDeltaF`, que hace justo lo que dice, almacena la fuerza
-precalculada de colisiones anteriores.
+a ambos objetos. Como la colisión no se detecta varias veces, tenemos una caché
+a nivel de clase (`PrecalculatedDeltaFCache`), que almacena la fuerza
+precalculada de otras colisiones.
 
-```csharp
-Vector f = obj.PrecalculatedDeltaF;
+```cs
+Vector f = PrecalculatedDeltaFCache[myIndex];
 
 // ...
 
-other.PrecalculatedDeltaF += obj.Speed * obj.Mass;
-other.PrecalculatedDeltaF -= other.Speed * other.Mass;
+PrecalculatedDeltaFCache[i] += obj.Speed * obj.Mass;
+PrecalculatedDeltaFCache[i] -= other.Speed * obj.Mass;
 ```
-
-XXX TODO introducir propiedad `PreviousAcceleration`, el código actual
-(`World.cs:42`) es incorrecto (el valor se sobreescribe en `World.cs:49`).
 

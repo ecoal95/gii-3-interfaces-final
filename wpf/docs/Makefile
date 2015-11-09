@@ -13,8 +13,16 @@ endif
 
 %.pdf: %.md
 	$(info [DOC] $< -> $@)
-	@pandoc $(PANDOC_FLAGS) --template=$(PANDOC_TEMPLATE) --from=markdown --latex-engine=xelatex --to=latex $< -o $@
+	@pandoc $(PANDOC_FLAGS) --standalone --template=$(PANDOC_TEMPLATE) --from=markdown --latex-engine=xelatex --to=latex $< -o $@
+
+%.html: %.md
+	$(info [DOC] $< -> $@)
+	@pandoc $(PANDOC_FLAGS) --standalone --from=markdown --latex-engine=xelatex --to=html $< -o $@
 
 %.dia.png: %.dia
 	$(info [IMG] $< -> $@)
 	@dia -e $@ $< -l
+
+.PHONY: clean
+clean:
+	$(RM) $(GENERATED_IMAGES) manual.pdf
