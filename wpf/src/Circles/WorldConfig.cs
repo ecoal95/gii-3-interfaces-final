@@ -6,22 +6,23 @@ namespace Circles
     {
         public List<MovingCircleConfig> Objects;
 
-        public double Gravity { get; }
-        public double Width { get; }
-        public double Height { get; }
-        public bool IsStatic { get; }
+        public double Gravity { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
+        public int ObjectCount { get { return Objects.Count; } }
 
-        public WorldConfig(double gravity, double height, double width, bool isStatic): this(gravity, height, width, isStatic, new List<MovingCircleConfig>())
+
+
+        public WorldConfig(double gravity, double height, double width): this(gravity, height, width, new List<MovingCircleConfig>())
         {
         }
 
-        public WorldConfig(double gravity, double height, double width, bool isStatic, List<MovingCircleConfig> objects)
+        public WorldConfig(double gravity, double height, double width, List<MovingCircleConfig> objects)
         {
             this.Objects = objects;
             this.Gravity = gravity;
             this.Height = height;
             this.Width = width;
-            this.IsStatic = isStatic;
         }
 
         public WorldConfigViewModel ToViewModel()
@@ -31,7 +32,6 @@ namespace Circles
             vm.Gravity = Gravity;
             vm.Width = Width;
             vm.Height = Height;
-            vm.IsStatic = IsStatic;
 
             foreach(MovingCircleConfig c in Objects)
             {
@@ -39,6 +39,11 @@ namespace Circles
             }
 
             return vm;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("World ({0}x{1}) g: {2} ({3} objects)", Width, Height, Gravity, ObjectCount);
         }
     }
 }

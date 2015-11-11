@@ -20,26 +20,23 @@ namespace Circles
         private Timer PhysicsTimer;
         private DispatcherTimer DrawTimer;
         private DynamicConfigurationWindow DynamicConfigurationWindow;
-        private double WorldWidth;
-        private double WorldHeight;
-        private bool IsStaticSimulation;
+        private WorldConfig Config;
 
+        public WorldConfig GetWorldConfig() {
+            return new WorldConfig(Config.Gravity, Config.Height, Config.Width, Config.Objects);
+        }
 
         const double MIN_WORLD_WIDTH = 500.0;
         const double MIN_WORLD_HEIGHT = 500.0;
         const uint PHYSICS_PER_SECOND = 180;
         const uint FRAMES_PER_SECOND = 120;
 
-        public SimulationWindow(WorldConfigViewModel config)
+        public SimulationWindow(WorldConfig config, bool shouldSave = true)
         {
             InitializeComponent();
-            this.WorldWidth = Math.Max(Math.Abs(config.Width), MIN_WORLD_WIDTH);
-            this.WorldHeight = Math.Max(Math.Abs(config.Height), MIN_WORLD_HEIGHT);
             this.ViewModel = new DynamicConfigViewModel();
-            this.ViewModel.Gravity = config.Gravity;
-            this.IsStaticSimulation = config.IsStatic;
-            this.World = new World(this.WorldWidth, this.WorldHeight, ViewModel.Gravity);
 
+            // We use another thread for physics
             this.PhysicsTimer = new Timer(1000.0 / PHYSICS_PER_SECOND);
             this.PhysicsTimer.AutoReset = true;
             this.PhysicsTimer.Elapsed += CalculatePhysics;
@@ -47,17 +44,8 @@ namespace Circles
 
             this.DrawTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(1000.0 / FRAMES_PER_SECOND), DispatcherPriority.Send, DoDraw, this.Dispatcher);
 
-            Canvas.Width = this.WorldWidth;
-            Canvas.Height = this.WorldHeight;
 
-            if (config.IsStatic)
-                OpenConfigurationDialogButton.Visibility = Visibility.Collapsed;
-            else
-                Canvas.MouseDown += HandleMouseDown;
-
-            foreach (MovingCircleConfig c in config.Objects) {
-                AddCircle(new MovingCircle(c.Radius, c.Mass, c.BounceFactor, c.Position - new Vector(c.Radius, c.Radius), c.Speed));
-            }
+            SetWorldConfig(config, shouldSave);
         }
 
         public void AddCircle(Point position) {
@@ -97,6 +85,7 @@ namespace Circles
             if (DynamicConfigurationWindow == null || !DynamicConfigurationWindow.IsVisible)
             {
                 DynamicConfigurationWindow = new DynamicConfigurationWindow();
+                DynamicConfigurationWindow.Owner = this;
                 DynamicConfigurationWindow.DataContext = ViewModel;
                 DynamicConfigurationWindow.Show();
             }
@@ -108,6 +97,30 @@ namespace Circles
         {
             if (DynamicConfigurationWindow != null)
                 DynamicConfigurationWindow.Close();
+            new MainWindow().Show();
+        }
+
+        public void SetWorldConfig(WorldConfig config, bool save = false) {
+            config.Width = Math.Max(Math.Abs(config.Width), MIN_WORLD_WIDTH);
+            config.Height = Math.Max(Math.Abs(config.Height), MIN_WORLD_HEIGHT);
+
+            this.Config = config;
+
+            Canvas.Width = Config.Width;
+            Canvas.Height = Config.Height;
+            Canvas.Children.Clear();
+
+
+            if ( save )
+                MapManager.GetInstance().SaveGame(config);
+
+            this.ViewModel.Gravity = Config.Gravity;
+
+            this.World = new World(Config.Width, Config.Height, ViewModel.Gravity);
+
+            foreach (MovingCircleConfig c in config.Objects) {
+                AddCircle(new MovingCircle(c.Radius, c.Mass, c.BounceFactor, c.Position - new Vector(c.Radius, c.Radius), c.Speed));
+            }
         }
     }
 }

@@ -6,11 +6,12 @@
         xmlns:local="clr-namespace:Circles"
         mc:Ignorable="d"
         Closing="CloseDialogIfPresent"
+        ResizeMode="NoResize"
         Title="SimulationWindow" SizeToContent="WidthAndHeight">
     <StackPanel>
         <Button Name="OpenConfigurationDialogButton" Click="OpenConfigurationDialog">Configure</Button>
         <!-- Background is needed to handle events -->
-        <Canvas Name="Canvas" Height="500" Width="500" Background="Transparent">
+        <Canvas Name="Canvas" Height="500" Width="500" MouseDown="HandleMouseDown" Background="Transparent">
         </Canvas>
     </StackPanel>
 </Window>

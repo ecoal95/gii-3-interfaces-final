@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Circles"
         mc:Ignorable="d"
-        Title="DynamicConfigurationWindow" Height="300" Width="300">
+        Title="DynamicConfigurationWindow" MinWidth="300"
+        SizeToContent="WidthAndHeight">
     <StackPanel>
         <Label>
             <Bold>World Configuration</Bold>
@@ -16,11 +17,25 @@
         <Label>
             <Bold>Next Ball Configuration</Bold>
         </Label>
-        <Label>Bounce factor</Label>
-        <Slider Name="BounceFactor" Value="{Binding BounceFactor, Mode=TwoWay}" Minimum="0" Maximum="1.5"/>
-        <Label>Radius</Label>
-        <Slider Name="Radius" Minimum="10" Value="{Binding Radius, Mode=TwoWay}" Maximum="75"/>
-        <Label>Mass</Label>
-        <Slider Name="Mass" Minimum="2" Value="{Binding Mass, Mode=TwoWay}" Maximum="75"/>
+
+        <TextBlock Text="{Binding ElementName=MassSlider,Path=Value, StringFormat=Mass: {0}}"></TextBlock>
+        <Slider IsSnapToTickEnabled="true" TickFrequency=".01" Value="{Binding Mass, Mode=TwoWay}" Name="MassSlider" Minimum="0" Maximum="100" SmallChange=".01" LargeChange=".01"></Slider>
+
+        <TextBlock Text="{Binding ElementName=RadiusSlider,Path=Value,StringFormat=Radius: {0}}"></TextBlock>
+        <Slider IsSnapToTickEnabled="true" TickFrequency=".01" Value="{Binding Radius, Mode=TwoWay}" Name="RadiusSlider" Minimum="10" Maximum="100" SmallChange=".01" LargeChange=".01"></Slider>
+
+        <TextBlock Text="{Binding ElementName=BounceFactorSlider,Path=Value,StringFormat=Bounce \Factor: {0}}"></TextBlock>
+        <Slider IsSnapToTickEnabled="true" TickFrequency=".01" Value="{Binding BounceFactor, Mode=TwoWay}" Name="BounceFactorSlider" Minimum="0" Maximum="2" SmallChange=".01" LargeChange=".01"></Slider>
+        <Separator></Separator>
+        <Label>
+            <Bold>Saved Games (double click to load)</Bold>
+        </Label>
+        <ListView Name="SavedGames">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <EventSetter Event="MouseDoubleClick" Handler="ItemDoubleClicked" />
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
     </StackPanel>
 </Window>

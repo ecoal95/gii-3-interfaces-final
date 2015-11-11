@@ -58,8 +58,6 @@ namespace Circles
         }
 
         public void CalculateSpeedAndPositionFromCollisions(MovingCircle obj, int myIndex, int len) {
-            int len = Objects.Count;
-
             // We only detect collisions for bodies after us in the list
             for (int i = myIndex + 1; i < len; ++i)
             {
@@ -71,7 +69,7 @@ namespace Circles
                 // If they collide
                 if ( centerToCenterLen <= other.Radius + obj.Radius )
                 {
-                    // We get the translation necessary to move one
+                    // We get the translation necessary to move one 
                     Vector a = centerToCenter * (obj.Radius / centerToCenterLen);
                     Vector b = centerToCenter * (centerToCenterLen - other.Radius) / centerToCenterLen;
                     Vector middle = (a - b) / 2;
@@ -113,7 +111,7 @@ namespace Circles
                 obj.Position = new Point(0, obj.Position.Y);
                 obj.Speed = new Vector(-obj.Speed.X * obj.BounceFactor, obj.Speed.Y);
             } else if (obj.Position.X + obj.Diameter > this.Width) {
-                obj.Position = new Point(this.Height - obj.Diameter, obj.Position.Y);
+                obj.Position = new Point(this.Width - obj.Diameter, obj.Position.Y);
                 obj.Speed = new Vector(-obj.Speed.X * obj.BounceFactor, obj.Speed.Y);
             }
 

@@ -10,8 +10,7 @@ namespace Circles
         public double Gravity = 300;
         public double Width = 500;
         public double Height = 500;
-        public bool IsStatic = false;
-
+        
         public event PropertyChangedEventHandler PropertyChanged;
 
         public string GravityText
@@ -67,7 +66,6 @@ namespace Circles
 
         public WorldConfigViewModel() {
             this.Objects = new ObservableCollection<MovingCircleConfig>();
-            this.IsStatic = false;
         }
 
         protected virtual void OnPropertyChanged(string propertyName)
@@ -78,7 +76,7 @@ namespace Circles
 
         public WorldConfig AsWorldConfig()
         {
-            return new WorldConfig(Gravity, Height, Width, IsStatic, new List<MovingCircleConfig>(Objects));
+            return new WorldConfig(Gravity, Height, Width, new List<MovingCircleConfig>(Objects));
         }
     }
 }

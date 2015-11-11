@@ -10,13 +10,11 @@ namespace Circles
         {
             get
             {
-                try
-                {
-                    return double.Parse(Text);
-                } catch (FormatException e)
-                {
-                    return 0;
+                double result;
+                if (double.TryParse(Text, out result)) {
+                    return result;
                 }
+                return 0;
             }
             set
             {

@@ -32,6 +32,10 @@ namespace Circles
             BounceFactor.Value = 1;
             SpeedX.Value = SpeedY.Value = 0;
             PositionX.Value = PositionY.Value = 500 / 2;
+            SavedGames.ItemsSource = MapManager.GetInstance().SavedGames;
+
+            if (SavedGames.Items.IsEmpty)
+                SavedGamesPanel.Visibility = Visibility.Collapsed;
         }
 
         private void AddObject(object sender, RoutedEventArgs e)
@@ -41,10 +45,15 @@ namespace Circles
 
         private void StartSimulation(object sender, EventArgs e)
         {
-            new SimulationWindow(config).Show();
+            new SimulationWindow(config.AsWorldConfig()).Show();
             this.Close();
         }
 
-        // TODO: Add map managing capabilities
+        private void ItemDoubleClicked(object sender, MouseButtonEventArgs e)
+        {
+            ListViewItem item = sender as ListViewItem;
+            new SimulationWindow(item.Content as WorldConfig, false).Show();
+            this.Close();
+        }
     }
 }

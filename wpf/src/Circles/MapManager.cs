@@ -14,22 +14,32 @@ namespace Circles
 
         public static MapManager GetInstance()
         {
-            if (Instance != null)
-                return Instance;
+            if (Instance == null)
+                Instance = new MapManager();
 
-            return new MapManager();
+            return Instance;
         }
 
-        private List<WorldConfig> SavedGames;
+
+        private List<WorldConfig> _SavedGames;
+
+        public List<WorldConfig> SavedGames
+        {
+            get
+            {
+                return new List<WorldConfig>(_SavedGames);
+            }
+        }
+
         public MapManager()
         {
             // TODO: Read from file and persist
-            this.SavedGames = new List<WorldConfig>();
+            this._SavedGames = new List<WorldConfig>();
         }
 
         public void SaveGame(WorldConfig game)
         {
-            SavedGames.Add(game);
+            _SavedGames.Add(game);
         }
     }
 }
