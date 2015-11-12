@@ -33,7 +33,7 @@ namespace Circles
 
             NumericTextBox sender = (NumericTextBox)_sender;
             string finalText = sender.Text.Remove(sender.SelectionStart, sender.SelectionLength)
-                                           .Insert(sender.SelectionStart, obj.Text);
+                                          .Insert(sender.SelectionStart, obj.Text);
 
             if ( ! double.TryParse(finalText, out d) )
                 obj.Handled = true;
