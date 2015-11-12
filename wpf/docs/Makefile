@@ -2,7 +2,7 @@ DIAGRAMS := $(wildcard img/*.dia)
 GENERATED_IMAGES := $(DIAGRAMS:.dia=.dia.png)
 PANDOC_TEMPLATE ?= template.latex
 
-TARGETS := programmers-manual.pdf users-manual.pdf
+TARGETS := docs.pdf
 
 .PHONY:
 docs: $(GENERATED_IMAGES) $(TARGETS)
