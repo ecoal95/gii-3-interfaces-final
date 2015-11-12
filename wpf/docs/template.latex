@@ -87,7 +87,8 @@ $if(natbib)$
 \bibliographystyle{$if(biblio-style)$$biblio-style$$else$plainnat$endif$}
 $endif$
 $if(biblatex)$
-\usepackage{biblatex}
+\usepackage[backend=biber$if(biblio-style)$,style=$biblio-style$$endif$]{biblatex}
+\nocite{*}
 $for(bibliography)$
 \addbibresource{$bibliography$}
 $endfor$
@@ -228,6 +229,13 @@ $endif$
 $endif$
 $endif$
 $if(biblatex)$
+$if(biblio-title)$
+$if(book-class)$
+\addcontentsline{toc}{chapter}{$biblio-title$}
+$else$
+\addcontentsline{toc}{section}{$biblio-title$}
+$endif$
+$endif$
 \printbibliography$if(biblio-title)$[title=$biblio-title$]$endif$
 
 $endif$

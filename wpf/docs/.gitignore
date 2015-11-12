@@ -1,2 +1,7 @@
-manual.pdf
+*.pdf
 *.dia.png
+*.aux
+*.tex
+*.log
+*.out
+*.toc
